@@ -1,0 +1,66 @@
+# SFT QLoRA 训练配置
+# 基座模型：Qwen/Qwen2-7B，使用 4bit 量化 + LoRA
+
+model:
+  base_model: "Qwen/Qwen2-7B"
+  max_seq_length: 2048
+  trust_remote_code: true
+
+quantization:
+  load_in_4bit: true
+  bnb_4bit_compute_dtype: "bfloat16"
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: true
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  bias: "none"
+  task_type: "CAUSAL_LM"
+
+training:
+  output_dir: "./outputs/sft_qlora"
+  num_train_epochs: 3
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-4
+  warmup_ratio: 0.1
+  lr_scheduler_type: "cosine"
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  fp16: false
+  bf16: true
+  logging_steps: 10
+  eval_steps: 100
+  save_steps: 200
+  save_total_limit: 3
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_loss"
+  dataloader_num_workers: 4
+  remove_unused_columns: false
+  report_to: "wandb"
+  optim: "paged_adamw_32bit"
+
+wandb:
+  project: "ecommerce-post-training"
+  run_name: "sft_qlora_qwen2_7b"
+  tags:
+    - "sft"
+    - "qlora"
+    - "qwen2-7b"
+    - "4bit"
+
+data:
+  train_file: "data/processed/train.jsonl"
+  eval_file: "data/processed/eval.jsonl"
+  text_field: "text"

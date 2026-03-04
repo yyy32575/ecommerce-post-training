@@ -1,0 +1,77 @@
+# GRPO 训练配置
+# Group Relative Policy Optimization，含 PPO 对照参数
+
+model:
+  base_model: "Qwen/Qwen2-7B"
+  sft_checkpoint: "./outputs/sft_lora/checkpoint-best"
+  reward_model: "./outputs/reward_model"
+  max_seq_length: 2048
+  trust_remote_code: true
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  bias: "none"
+  task_type: "CAUSAL_LM"
+
+grpo:
+  # GRPO 核心参数
+  group_size: 8                    # 每个 prompt 采样的响应数量
+  temperature: 0.9
+  top_p: 0.95
+  max_new_tokens: 512
+  reward_scale: 1.0
+  kl_coef: 0.05                   # KL 散度惩罚系数
+  clip_range: 0.2                  # PPO-style clip range（对照用）
+  normalize_rewards: true
+
+ppo_comparison:
+  # PPO 对照参数（用于 GRPO vs PPO 边界分析）
+  ppo_epochs: 4
+  mini_batch_size: 4
+  batch_size: 16
+  cliprange: 0.2
+  cliprange_value: 0.2
+  vf_coef: 0.1
+  gamma: 0.99
+  lam: 0.95
+  target_kl: 0.1
+  horizon: 10000
+
+training:
+  output_dir: "./outputs/grpo"
+  num_train_epochs: 2
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-6
+  warmup_ratio: 0.05
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 1.0
+  bf16: true
+  logging_steps: 10
+  save_steps: 200
+  save_total_limit: 2
+  remove_unused_columns: false
+  report_to: "wandb"
+
+wandb:
+  project: "ecommerce-post-training"
+  run_name: "grpo_qwen2_7b"
+  tags:
+    - "grpo"
+    - "rlhf"
+    - "qwen2-7b"
+
+data:
+  train_file: "data/processed/rl_train.jsonl"
+  eval_file: "data/processed/rl_eval.jsonl"
+  prompt_field: "prompt"

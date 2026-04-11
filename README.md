@@ -124,7 +124,7 @@ bash scripts/run_eval.sh --data data/processed/eval.jsonl --model-name dpo
 | 事实性 | LLM-as-judge (1-5分) + 实体级准确率 | 30% |
 | 任务完成度 | 需求理解/推荐相关性/信息完整性 | 30% |
 | 安全性 | 虚假促销/价格误导/违禁品/隐私 | 25% |
-| 多样性 | distinct-n/n-gram重复率/语义聚类 | 15% |
+| 模板化率 | 句式相似度/n-gram重复率/固定开头比例 | 15% |
 
 ### 错误分桶
 

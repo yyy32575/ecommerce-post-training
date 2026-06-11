@@ -1,0 +1,18 @@
+{
+  "experiment_id": "sft_lora_v1",
+  "method": "SFT-LoRA",
+  "seed": 42,
+  "dataset_version": "ecom_train_v3.2",
+  "steps": [
+    {"step": 50, "epoch": 0.2, "loss": 2.38, "accuracy": 0.31, "eval_loss": 2.55},
+    {"step": 100, "epoch": 0.4, "loss": 2.05, "accuracy": 0.38, "eval_loss": 2.22},
+    {"step": 150, "epoch": 0.6, "loss": 1.86, "accuracy": 0.44, "eval_loss": 2.01},
+    {"step": 200, "epoch": 0.8, "loss": 1.69, "accuracy": 0.49, "eval_loss": 1.87},
+    {"step": 250, "epoch": 1.0, "loss": 1.58, "accuracy": 0.53, "eval_loss": 1.74},
+    {"step": 300, "epoch": 1.2, "loss": 1.47, "accuracy": 0.57, "eval_loss": 1.63},
+    {"step": 350, "epoch": 1.4, "loss": 1.40, "accuracy": 0.60, "eval_loss": 1.58},
+    {"step": 400, "epoch": 1.6, "loss": 1.35, "accuracy": 0.62, "eval_loss": 1.52},
+    {"step": 450, "epoch": 1.8, "loss": 1.31, "accuracy": 0.64, "eval_loss": 1.49},
+    {"step": 500, "epoch": 2.0, "loss": 1.28, "accuracy": 0.66, "eval_loss": 1.46}
+  ]
+}

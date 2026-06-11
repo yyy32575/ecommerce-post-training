@@ -1,0 +1,72 @@
+# 实验配置与结果映射（集中管理）
+metadata:
+  owner: ecommerce-post-training
+  updated_at: "2026-06-11T23:00:00Z"
+  evaluator: "offline_eval_team"
+
+experiments:
+  sft_lora_v1:
+    method: "SFT-LoRA"
+    config_file: "configs/sft_lora.yaml"
+    metrics_file: "data/benchmark/sft_lora_metrics.json"
+    benchmark_file: "evaluation/benchmark_results.json"
+    result_key: "sft_lora"
+    seed: 42
+    dataset_version: "ecom_train_v3.2"
+    evaluator: "judge_team_a"
+    hyperparameters:
+      learning_rate: 0.0002
+      lora_rank: 64
+      warmup_ratio: 0.05
+      batch_size_per_device: 4
+      gradient_accumulation_steps: 8
+
+  sft_qlora_v1:
+    method: "SFT-QLoRA"
+    config_file: "configs/sft_qlora.yaml"
+    metrics_file: "data/benchmark/sft_qlora_metrics.json"
+    benchmark_file: "evaluation/benchmark_results.json"
+    result_key: "sft_qlora"
+    seed: 42
+    dataset_version: "ecom_train_v3.2"
+    evaluator: "judge_team_a"
+    hyperparameters:
+      learning_rate: 0.0001
+      lora_rank: 32
+      quantization: "nf4-4bit"
+      warmup_ratio: 0.1
+      batch_size_per_device: 4
+      gradient_accumulation_steps: 8
+
+  dpo_v1:
+    method: "DPO"
+    config_file: "configs/dpo.yaml"
+    metrics_file: "data/benchmark/dpo_metrics.json"
+    benchmark_file: "evaluation/benchmark_results.json"
+    result_key: "dpo"
+    seed: 42
+    dataset_version: "ecom_pref_v1.5"
+    evaluator: "judge_team_b"
+    hyperparameters:
+      learning_rate: 0.0000005
+      beta: 0.1
+      lora_rank: 32
+      batch_size_per_device: 2
+      gradient_accumulation_steps: 8
+
+  grpo_v1:
+    method: "GRPO"
+    config_file: "configs/grpo.yaml"
+    metrics_file: "data/benchmark/grpo_metrics.json"
+    benchmark_file: "evaluation/benchmark_results.json"
+    result_key: "grpo"
+    seed: 42
+    dataset_version: "ecom_rl_v1.2"
+    evaluator: "judge_team_b"
+    hyperparameters:
+      learning_rate: 0.000001
+      group_size: 8
+      kl_coef: 0.05
+      lora_rank: 32
+      batch_size_per_device: 2
+      gradient_accumulation_steps: 8

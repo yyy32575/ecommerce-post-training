@@ -1,0 +1,163 @@
+{
+  "meta": {
+    "benchmark_name": "ecommerce_post_training_quantitative_comparison",
+    "dataset_name": "ecom_eval_set",
+    "dataset_version": "v2026.06",
+    "test_set_size": 1200,
+    "evaluation_window": {
+      "started_at": "2026-06-10T08:00:00Z",
+      "finished_at": "2026-06-10T14:45:00Z"
+    },
+    "judge_model": "qwen2.5-72b-instruct",
+    "notes": "包含 LoRA/QLoRA 与 SFT-only、DPO、GRPO 的量化对比。"
+  },
+  "models": {
+    "sft_lora": {
+      "display_name": "SFT-LoRA",
+      "metrics": {
+        "factuality": 3.24,
+        "task_completion": 3.51,
+        "safety": 4.54,
+        "template_rate": 0.62,
+        "overall_score": 3.61
+      },
+      "training_cost": {
+        "gpu_hours": 10.8,
+        "peak_vram_gb": 40.2,
+        "epochs": 3,
+        "tokens_seen_million": 145.0
+      },
+      "inference": {
+        "latency_ms_p50": 128,
+        "latency_ms_p95": 212,
+        "throughput_tok_per_s": 45.1
+      },
+      "error_buckets": {
+        "hallucination": 186,
+        "omission": 243,
+        "over_generalization": 318,
+        "factual_error": 104,
+        "format_issue": 57,
+        "safe_and_correct": 292
+      }
+    },
+    "sft_qlora": {
+      "display_name": "SFT-QLoRA",
+      "metrics": {
+        "factuality": 3.05,
+        "task_completion": 3.34,
+        "safety": 4.46,
+        "template_rate": 0.65,
+        "overall_score": 3.43
+      },
+      "training_cost": {
+        "gpu_hours": 12.6,
+        "peak_vram_gb": 16.7,
+        "epochs": 3,
+        "tokens_seen_million": 145.0
+      },
+      "inference": {
+        "latency_ms_p50": 137,
+        "latency_ms_p95": 229,
+        "throughput_tok_per_s": 41.8
+      },
+      "error_buckets": {
+        "hallucination": 211,
+        "omission": 256,
+        "over_generalization": 332,
+        "factual_error": 118,
+        "format_issue": 61,
+        "safe_and_correct": 222
+      }
+    },
+    "dpo": {
+      "display_name": "DPO",
+      "metrics": {
+        "factuality": 3.63,
+        "task_completion": 3.92,
+        "safety": 4.64,
+        "template_rate": 0.28,
+        "overall_score": 4.03
+      },
+      "training_cost": {
+        "gpu_hours": 4.2,
+        "peak_vram_gb": 21.4,
+        "epochs": 1,
+        "tokens_seen_million": 52.0
+      },
+      "inference": {
+        "latency_ms_p50": 132,
+        "latency_ms_p95": 216,
+        "throughput_tok_per_s": 44.6
+      },
+      "error_buckets": {
+        "hallucination": 97,
+        "omission": 136,
+        "over_generalization": 144,
+        "factual_error": 63,
+        "format_issue": 39,
+        "safe_and_correct": 721
+      }
+    },
+    "grpo": {
+      "display_name": "GRPO",
+      "metrics": {
+        "factuality": 3.74,
+        "task_completion": 4.01,
+        "safety": 4.69,
+        "template_rate": 0.25,
+        "overall_score": 4.14
+      },
+      "training_cost": {
+        "gpu_hours": 7.1,
+        "peak_vram_gb": 22.9,
+        "epochs": 2,
+        "tokens_seen_million": 80.0
+      },
+      "inference": {
+        "latency_ms_p50": 134,
+        "latency_ms_p95": 220,
+        "throughput_tok_per_s": 44.0
+      },
+      "error_buckets": {
+        "hallucination": 82,
+        "omission": 118,
+        "over_generalization": 129,
+        "factual_error": 54,
+        "format_issue": 33,
+        "safe_and_correct": 784
+      }
+    }
+  },
+  "significance_tests": {
+    "overall_score": [
+      {
+        "comparison": "dpo_vs_sft_lora",
+        "test": "paired_t_test",
+        "p_value": 0.0041,
+        "effect_size": 0.41,
+        "confidence_interval_95": [0.22, 0.61]
+      },
+      {
+        "comparison": "grpo_vs_sft_lora",
+        "test": "paired_t_test",
+        "p_value": 0.0017,
+        "effect_size": 0.53,
+        "confidence_interval_95": [0.31, 0.73]
+      },
+      {
+        "comparison": "grpo_vs_dpo",
+        "test": "paired_t_test",
+        "p_value": 0.039,
+        "effect_size": 0.12,
+        "confidence_interval_95": [0.01, 0.23]
+      }
+    ],
+    "method_family": {
+      "test": "one_way_anova",
+      "groups": ["sft_lora", "sft_qlora", "dpo", "grpo"],
+      "f_statistic": 18.27,
+      "p_value": 0.00003
+    }
+  }
+}

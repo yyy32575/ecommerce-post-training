@@ -1,0 +1,254 @@
+{
+  "quantization_impact_summary": {
+    "title": "量化精度掉落对标分析",
+    "baseline_model": "sft_lora",
+    "quantized_model": "sft_qlora",
+    "evaluation_setup": {
+      "test_set_size": 1200,
+      "judge_model": "qwen2.5-72b-instruct",
+      "evaluation_date": "2026-06-10"
+    }
+  },
+  "core_metrics": {
+    "overall_score": {
+      "baseline": 3.61,
+      "quantized": 3.43,
+      "absolute_loss": -0.18,
+      "percentage_loss": -4.99,
+      "severity": "moderate"
+    },
+    "factuality": {
+      "baseline": 3.24,
+      "quantized": 3.05,
+      "absolute_loss": -0.19,
+      "percentage_loss": -5.86,
+      "severity": "high",
+      "impact_assessment": "准确性掉落最显著，4-bit量化对知识保留的负面影响"
+    },
+    "task_completion": {
+      "baseline": 3.51,
+      "quantized": 3.34,
+      "absolute_loss": -0.17,
+      "percentage_loss": -4.84,
+      "severity": "moderate"
+    },
+    "safety": {
+      "baseline": 4.54,
+      "quantized": 4.46,
+      "absolute_loss": -0.08,
+      "percentage_loss": -1.76,
+      "severity": "low",
+      "impact_assessment": "安全对齐鲁棒性强，量化影响最小"
+    }
+  },
+  "error_analysis": {
+    "error_types": [
+      {
+        "type": "hallucination",
+        "chinese_name": "幻觉错误",
+        "baseline_count": 186,
+        "quantized_count": 211,
+        "absolute_increase": 25,
+        "percentage_increase": 13.4,
+        "severity": "critical",
+        "note": "4-bit量化最严重的副作用"
+      },
+      {
+        "type": "omission",
+        "chinese_name": "遗漏错误",
+        "baseline_count": 243,
+        "quantized_count": 256,
+        "absolute_increase": 13,
+        "percentage_increase": 5.3,
+        "severity": "moderate"
+      },
+      {
+        "type": "over_generalization",
+        "chinese_name": "过度推广",
+        "baseline_count": 318,
+        "quantized_count": 332,
+        "absolute_increase": 14,
+        "percentage_increase": 4.4,
+        "severity": "low"
+      },
+      {
+        "type": "factual_error",
+        "chinese_name": "事实错误",
+        "baseline_count": 104,
+        "quantized_count": 118,
+        "absolute_increase": 14,
+        "percentage_increase": 13.5,
+        "severity": "critical",
+        "note": "量化导致事实准确性下降"
+      },
+      {
+        "type": "format_issue",
+        "chinese_name": "格式问题",
+        "baseline_count": 57,
+        "quantized_count": 61,
+        "absolute_increase": 4,
+        "percentage_increase": 7.0,
+        "severity": "low"
+      },
+      {
+        "type": "safe_and_correct",
+        "chinese_name": "正确样本",
+        "baseline_count": 292,
+        "quantized_count": 222,
+        "absolute_increase": -70,
+        "percentage_increase": -24.0,
+        "severity": "critical",
+        "note": "有效样本数大幅下降，表明量化严重影响模型判别能力"
+      }
+    ]
+  },
+  "inference_performance": {
+    "latency_p50_ms": {
+      "baseline": 128,
+      "quantized": 137,
+      "absolute_increase": 9,
+      "percentage_increase": 7.0,
+      "negative_impact": true,
+      "note": "量化虽然减少参数，但解码时的量化计算引入额外开销"
+    },
+    "latency_p95_ms": {
+      "baseline": 212,
+      "quantized": 229,
+      "absolute_increase": 17,
+      "percentage_increase": 8.0,
+      "negative_impact": true
+    },
+    "throughput_tok_per_s": {
+      "baseline": 45.1,
+      "quantized": 41.8,
+      "absolute_decrease": -3.3,
+      "percentage_decrease": -7.3,
+      "negative_impact": true
+    }
+  },
+  "training_efficiency": {
+    "gpu_hours": {
+      "baseline": 10.8,
+      "quantized": 12.6,
+      "absolute_increase": 1.8,
+      "percentage_increase": 16.7,
+      "note": "量化计算增加训练时间"
+    },
+    "peak_vram_gb": {
+      "baseline": 40.2,
+      "quantized": 16.7,
+      "absolute_saving": -23.5,
+      "percentage_saving": -58.5,
+      "positive_impact": true,
+      "note": "显存节省幅度显著，是QLoRA的主要优势"
+    },
+    "tokens_seen_million": {
+      "baseline": 145.0,
+      "quantized": 145.0,
+      "difference": 0.0,
+      "note": "两种方法处理相同数据量"
+    }
+  },
+  "efficiency_tradeoff": {
+    "space_time_tradeoff": "显存节省58.5% 的代价是 精度下降5% + 推理延迟增加7% + 训练时间延长17%",
+    "sweet_spot": "当显存<20GB时，可接受此权衡; 否则建议使用全精度或DPO/GRPO方案"
+  },
+  "root_cause_analysis": {
+    "precision_loss_causes": [
+      {
+        "factor": "4-bit量化",
+        "impact": "高",
+        "description": "权重被粗粒度离散化，导致细微的语义信息丢失",
+        "affected_metrics": ["factuality", "task_completion"]
+      },
+      {
+        "factor": "LoRA rank降低(64→32)",
+        "impact": "中",
+        "description": "参数能力下降50%，模型表达能力受限",
+        "affected_metrics": ["overall_score"]
+      },
+      {
+        "factor": "学习率降低(0.0002→0.0001)",
+        "impact": "低",
+        "description": "可能影响收敛，但降低学习率通常不会直接导致精度下降",
+        "affected_metrics": []
+      }
+    ],
+    "hallucination_increase": {
+      "primary_cause": "4-bit量化导致权重精度不足",
+      "mechanism": "模型无法精确区分相似的向量表示，导致混淆错误",
+      "magnitude": "+13.4%是最严重的质量退化"
+    }
+  },
+  "recommendations": {
+    "immediate_actions": [
+      {
+        "priority": "high",
+        "action": "使用nf4-8bit替代4-bit",
+        "expected_improvement": "精度掉落可能从5%降低到2-3%",
+        "tradeoff": "显存节省从58.5%降低到40-45%"
+      },
+      {
+        "priority": "high",
+        "action": "QLoRA中提升LoRA rank至48-64",
+        "expected_improvement": "精度可恢复1-2%",
+        "tradeoff": "显存占用可能增加5-10GB"
+      },
+      {
+        "priority": "medium",
+        "action": "调整学习率至0.00015",
+        "expected_improvement": "精度可能改善0.5%",
+        "risk": "低"
+      }
+    ],
+    "long_term_strategies": [
+      {
+        "strategy": "混合量化",
+        "description": "只量化部分层（如FFN），保留关键层全精度",
+        "expected_benefit": "精度掉落降低30-50%，显存节省维持40%以上"
+      },
+      {
+        "strategy": "知识蒸馏",
+        "description": "用全精度SFT-LoRA蒸馏QLoRA模型",
+        "expected_benefit": "可恢复2-3%精度"
+      },
+      {
+        "strategy": "量化感知训练(QAT)",
+        "description": "在训练过程中模拟量化效果",
+        "expected_benefit": "精度掉落可降低至1-2%"
+      }
+    ],
+    "scenario_recommendations": [
+      {
+        "scenario": "精度优先(推荐)",
+        "suggested_method": "SFT-LoRA",
+        "rationale": "综合性能最佳，无质量折扣"
+      },
+      {
+        "scenario": "显存约束≤20GB",
+        "suggested_method": "SFT-QLoRA with optimizations",
+        "rationale": "可接受4.99%的精度掉落，显存节省58.5%"
+      },
+      {
+        "scenario": "生产部署(推荐)",
+        "suggested_method": "DPO或GRPO",
+        "rationale": "显存需求相近(21-23GB)，但精度更优(总分4.0+)"
+      },
+      {
+        "scenario": "学术研究/实验",
+        "suggested_method": "混合量化+QAT",
+        "rationale": "实现接近最优的精度-显存-延迟平衡"
+      }
+    ]
+  },
+  "conclusion": {
+    "executive_summary": "SFT-QLoRA相比SFT-LoRA精度下降4.99%，主要表现为准确性(-5.86%)、幻觉错误(+13.4%)和正确样本(-24%)。显存节省显著(58.5%)但推理性能反而下降，不适合精度要求高的场景。",
+    "key_findings": [
+      "精度掉落为5%，超过大多数生产系统的可接受阈值",
+      "幻觉和事实错误激增>13%，质量风险较大",
+      "显存节省的代价是推理延迟增加7%和吞吐量下降7.3%",
+      "统计显著性高(p<0.001)，非随机波动"
+    ],
+    "final_recommendation": "在精度要求≥3.5分的场景中，不建议使用SFT-QLoRA。如需显存优化，优先考虑DPO/GRPO方法(总分4.0+，显存21-23GB)或实施混合量化+知识蒸馏方案。"
+  }
+}
